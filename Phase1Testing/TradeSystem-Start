@@ -1,0 +1,50 @@
+//SPDX-License-Identifier:MIT
+pragma solidity ^0.8.26;
+
+contract SmithTrade {
+    struct Trade{
+        address party1;
+        address party2;
+        string items;  // comma-separated items
+        bytes32 tradeHash;
+    }
+
+    uint256 public tradeCount;
+    mapping(uint256 => Trade) public trades; 
+
+    event TradeCreated(
+        uint256 tradeId,
+        address indexed party1,
+        address indexed part2y,
+        string items, 
+        bytes32 tradeHash 
+    );
+
+    constructor() {
+        tradeCount = 0;
+    }
+
+    function createTrade(address _party2, string memory _items) public {
+        require(bytes(_items).length > 0, "Items cannot be empty");
+
+        tradeCount++; 
+        bytes32 tradeHash = keccak256(abi.encodePacked(msg.sender, _party2, _items, block.timestamp));
+
+        trades[tradeCount]= Trade({
+            party1: msg.sender,
+            party2: _party2,
+            items: _items,
+            tradeHash: tradeHash
+        });
+
+        emit TradeCreated(tradeCount, msg.sender, _party2, _items, tradeHash);
+    } 
+
+    function getTrade(uint256 _tradeId) public view returns (address, address, string memory, bytes32){
+        Trade memory trade = trades[_tradeId];
+        return (trade.party1, trade.party2, trade.items, trade.tradeHash);
+    }
+
+
+
+}
